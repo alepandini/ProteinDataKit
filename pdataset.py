@@ -86,7 +86,6 @@ class ProteinDataSet:
             topology_filename,
             trajectory_filename,
             permissive=False,
-            topology_format="GRO",
         )
         return trajectory_data
 
@@ -282,21 +281,34 @@ class ProteinDataSet:
         np.save(outfilepath, outfile)
         return outfile
 
-    def holdout_input_prep(self, infilepath, outfilepath_training, outfilepath_testing):
+    def _get_holdout_indices(self, test_set_size = 0.3):
         """
         Prepares input data for machine learning by splitting the input file into training and testing data.
 
         Parameters
         ----------
-        infilepath : str
+        test_set_size : float, opt
             Path to the input file containing the data to be split.
-        outfilepath_training : str
-            Path where the training data file will be saved.
-        outfilepath_testing : str
-            Path where the testing data file will be saved.
         """
-        training_data, testing_data = train_test_split(
-            infilepath, test_size=0.3, random_state=25
+        if test_set_size > 1.0 or test_set_size < 0.0:
+            print("test size should in [0, 1]")
+        else:
+            training_set_indices, test_set_indices = train_test_split(
+            self.frame_indices, test_size=test_set_size, random_state=25
         )
-        np.save(outfilepath_training, training_data)
-        np.save(outfilepath_testing, testing_data)
+        return training_set_indices
+
+    def create_ML_data_set(self):
+        ml_data_set = MLDataSet(protein_data_set)
+        return ml_data_set
+
+
+class MLDataSet:
+    """
+    Class representing protein data for ML.
+
+    Attributes
+    -----------
+    """
+    def __init__(self, protein_data_set):
+        self.protein_data_set = protein_data_set
