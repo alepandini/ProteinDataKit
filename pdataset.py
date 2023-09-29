@@ -4,7 +4,7 @@ import numpy as np
 import numpy as np
 
 
-class ProteinData:
+class ProteinDataSet:
     """
     Class representing protein data.
 
@@ -123,7 +123,6 @@ class ProteinData:
                 ),
             )
 
-        log.info("{:15s} Number of frames: {}".format("INPUT", len(frames)))
         return frames
 
     def _frame_indices_of_trajectory(self):
@@ -180,11 +179,6 @@ class ProteinData:
                 )
                 raise TypeError("Expected int or slice")
         selected_frames = trajectory_data[np.where(mask)[0]]
-        log.info(
-            "{:15s} Number of selected frames: {}".format(
-                "OUTPUT", len(selected_frames)
-            )
-        )
         return selected_frames
 
     def frame_selection_indices(self, selection_of_frames):
@@ -288,7 +282,7 @@ class ProteinData:
         np.save(outfilepath, outfile)
         return outfile
 
-    def ML_input_prep(self, infilepath, outfilepath_training, outfilepath_testing):
+    def holdout_input_prep(self, infilepath, outfilepath_training, outfilepath_testing):
         """
         Prepares input data for machine learning by splitting the input file into training and testing data.
 
