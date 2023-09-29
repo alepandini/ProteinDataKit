@@ -281,25 +281,43 @@ class ProteinDataSet:
         np.save(outfilepath, outfile)
         return outfile
 
-    def _get_holdout_indices(self, test_set_size = 0.3):
+    def _get_holdout_indices(self, test_set_size):
         """
-        Prepares input data for machine learning by splitting the input file into training and testing data.
+        Generate indices for training and test rows
 
         Parameters
         ----------
         test_set_size : float, opt
             Path to the input file containing the data to be split.
         """
+        training_set_indices, test_set_indices = train_test_split(
+        self.frame_indices, test_size=test_set_size, random_state=25)
+        return (training_set_indices, test_set_indices)
+
+    def create_holdout_data_set(self, test_set_size = 0.3):
+        """
+        crete 
+
+        Parameters
+        ----------
+        infilepath : numpy.ndarray
+            The input 3D numpy array to be converted.
+        outfilepath : str
+            The path where the output file will be saved.
+
+        Returns
+        -------
+        numpy.ndarray
+            The converted 2D numpy array.
+        """
+        ml_data_set = MLDataSet(self)
         if test_set_size > 1.0 or test_set_size < 0.0:
             print("test size should in [0, 1]")
         else:
-            training_set_indices, test_set_indices = train_test_split(
-            self.frame_indices, test_size=test_set_size, random_state=25
-        )
-        return training_set_indices
-
-    def create_ML_data_set(self):
-        ml_data_set = MLDataSet(protein_data_set)
+            training_set_indices, test_set_indices = self._get_holdout_indices(
+            test_set_size)
+            ml_data_set.training_indices = training_set_indices
+            ml_data_set.test_indices = test_set_indices
         return ml_data_set
 
 
@@ -312,3 +330,10 @@ class MLDataSet:
     """
     def __init__(self, protein_data_set):
         self.protein_data_set = protein_data_set
+        self.training_indices = None
+        self.test_indices = None
+        self.x_training = None
+        self.y_training = None
+        self.x_test = None
+        self.y_test = None
+
