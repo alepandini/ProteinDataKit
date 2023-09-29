@@ -22,6 +22,7 @@ class ProteinDataSet:
         self,
         trajectory_filename,
         topology_filename,
+        target_property_filename,
         config_parameters=None,
     ):
         """
@@ -39,6 +40,7 @@ class ProteinDataSet:
 
         self.trajectory_filename = trajectory_filename
         self.topology_filename = topology_filename
+        self.target_property_filename = target_property_filename
         self.trajectory_data = self._read_trajectory(
             self.trajectory_filename, self.topology_filename
         )
@@ -48,6 +50,7 @@ class ProteinDataSet:
         self.frames = self._frames_of_trajectory()
         self.frame_indices = self._frame_indices_of_trajectory()
         self.ref_coordinates = self.topology_data.trajectory[0].positions
+        self.target_property = self.read_target_property(self.target_property_filename)
 
     def _read_topology(self, topology_filename):
         """
@@ -171,11 +174,6 @@ class ProteinDataSet:
             if isinstance(i, int) or isinstance(i, slice):
                 mask[i] = True
             else:
-                log.error(
-                    "{:15s} Expected int or slice in frame_selection_iterator()".format(
-                        "STEPS"
-                    )
-                )
                 raise TypeError("Expected int or slice")
         selected_frames = trajectory_data[np.where(mask)[0]]
         return selected_frames
@@ -205,11 +203,6 @@ class ProteinDataSet:
             if isinstance(i, int) or isinstance(i, slice):
                 mask[i] = True
             else:
-                log.error(
-                    "{:15s} Expected int or slice in frame_selection_iterator()".format(
-                        "STEPS"
-                    )
-                )
                 raise TypeError("Expected int or slice")
         selected_frames = trajectory_data[np.where(mask)[0]]
         indices_of_selected_frames = [ts.frame for ts in selected_frames]
@@ -291,12 +284,13 @@ class ProteinDataSet:
             Path to the input file containing the data to be split.
         """
         training_set_indices, test_set_indices = train_test_split(
-        self.frame_indices, test_size=test_set_size, random_state=25)
+            self.frame_indices, test_size=test_set_size, random_state=25
+        )
         return (training_set_indices, test_set_indices)
 
-    def create_holdout_data_set(self, test_set_size = 0.3):
+    def create_holdout_data_set(self, test_set_size=0.3):
         """
-        crete 
+        crete
 
         Parameters
         ----------
@@ -315,10 +309,39 @@ class ProteinDataSet:
             print("test size should in [0, 1]")
         else:
             training_set_indices, test_set_indices = self._get_holdout_indices(
-            test_set_size)
+                test_set_size
+            )
             ml_data_set.training_indices = training_set_indices
             ml_data_set.test_indices = test_set_indices
         return ml_data_set
+
+    def read_target_property(self, target_property_filename):
+        target_property = np.loadtxt(target_property_filename)
+        return target_property
+
+    def get_indices_target(self, target_property_filename):
+        frame_indices = []
+        for x in range(len(target_property_filename)):
+            frame_indices.append(x)
+        return frame_indices
+
+    def filter_target_indices(self, selection_of_frames):
+        selection_of_frames = self.create_holdout_data_set().training_indices
+        import code
+
+        code.interact(local=locals())
+        mask = np.array([False for _ in selection_of_frames])
+        for i in selection_of_frames:
+            if isinstance(i, int) or isinstance(i, slice):
+                mask[i] = True
+            else:
+                raise TypeError("Expected int or slice")
+        selected_frames = selection_of_frames[np.where(mask)[0]]
+        filtered_target_indices = [ts.frame for ts in selected_frames]
+        import code
+
+        code.interact(local=locals())
+        return filtered_target_indices
 
 
 class MLDataSet:
@@ -328,6 +351,7 @@ class MLDataSet:
     Attributes
     -----------
     """
+
     def __init__(self, protein_data_set):
         self.protein_data_set = protein_data_set
         self.training_indices = None
@@ -336,4 +360,3 @@ class MLDataSet:
         self.y_training = None
         self.x_test = None
         self.y_test = None
-
