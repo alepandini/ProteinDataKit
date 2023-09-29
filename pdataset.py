@@ -1,12 +1,7 @@
 from sklearn.model_selection import train_test_split
-from datetime import datetime
-from copy import deepcopy
-from re import L
 import MDAnalysis as mda
 import numpy as np
-from mdss.log_setup import log
 import numpy as np
-import json
 
 
 class ProteinData:
@@ -53,7 +48,6 @@ class ProteinData:
         self.frames = self._frames_of_trajectory()
         self.frame_indices = self._frame_indices_of_trajectory()
         self.ref_coordinates = self.topology_data.trajectory[0].positions
-        self.property_dict = {}
 
     def _read_topology(self, topology_filename):
         """
@@ -312,57 +306,3 @@ class ProteinData:
         )
         np.save(outfilepath_training, training_data)
         np.save(outfilepath_testing, testing_data)
-
-    def add_property(self, protein_property, property_name):
-        """
-        Add a protein property to the dictionary.
-
-        Parameters
-        ----------
-        protein_property : ProteinProperty
-            An object of the ProteinProperty class that represents the protein property.
-        property_name : str
-            The name of the property to be added.
-
-        Returns
-        -------
-        str
-            A string containing the property name and timestamp.
-        """
-        timestamp = str(datetime.now().timestamp())
-        key = "{}_{}".format(property_name, timestamp)
-        self.property_dict[key] = protein_property
-        return key
-
-    def property_data_report(self, outfilepath):
-        """
-        Create a JSON report with key information and statistics for the property.
-
-        Parameters
-        ----------
-        outfilepath : str
-            Path to the output file where the JSON report will be saved.
-
-        Returns
-        -------
-        dict
-            A dictionary containing the report information.
-        """
-        report_dict = {}
-        for k, v in self.property_dict.items():
-            report_dict[k] = {
-                "min": round(v.min_value, 3),
-                "max": round(v.max_value, 3),
-                "atom_selection": v.atom_selection,
-                "property_name": v.display_name,
-                "dissimilarity": round(v.ref_dissimilarity, 5),
-                "traj_size": len(v.frame_indices),
-            }
-            if hasattr(v, "ref_property"):
-                report_dict[k]["sample_percent"] = (
-                    100 * len(v.frame_indices) / len(v.ref_property.frame_indices)
-                )
-        with open(outfilepath, "w") as f:
-            json.dump(report_dict, f, indent=2)
-
-        return report_dict
