@@ -327,9 +327,6 @@ class ProteinDataSet:
 
     def filter_target_indices(self, selection_of_frames):
         selection_of_frames = self.create_holdout_data_set().training_indices
-        import code
-
-        code.interact(local=locals())
         mask = np.array([False for _ in selection_of_frames])
         for i in selection_of_frames:
             if isinstance(i, int) or isinstance(i, slice):
@@ -338,9 +335,6 @@ class ProteinDataSet:
                 raise TypeError("Expected int or slice")
         selected_frames = selection_of_frames[np.where(mask)[0]]
         filtered_target_indices = [ts.frame for ts in selected_frames]
-        import code
-
-        code.interact(local=locals())
         return filtered_target_indices
 
 

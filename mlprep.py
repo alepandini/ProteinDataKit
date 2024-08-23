@@ -20,7 +20,3 @@ print(len(selection))
 filter_target = p_data.filter_target_indices(selection)
 
 print(len(filter_target))
-# import code
-
-# code.interact(local=locals())
-# print(ml_obj.training_indices)
