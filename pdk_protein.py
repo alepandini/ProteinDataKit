@@ -274,23 +274,36 @@ class ProteinDataSet:
         np.save(outfilepath, outfile)
         return outfile
 
-    def _get_holdout_indices(self, test_set_size):
+    def _get_holdout_indices(self, test_set_size, validation_set_size=0.0):
         """
-        Generate indices for training and test rows
+        Generate indices for trainin, testing and validation rows
 
         Parameters
         ----------
         test_set_size : float, opt
             Path to the input file containing the data to be split.
         """
-        training_set_indices, test_set_indices = train_test_split(
+        train_val_indices, test_indices = train_test_split(
             self.frame_indices, test_size=test_set_size, random_state=25
         )
-        return (training_set_indices, test_set_indices)
 
-    def create_holdout_data_set(self, test_set_size=0.3):
+        if validation_set_size > 0.0:
+            # Adjust validation set size to be relative to the (training + validation) size
+            adjusted_validation_size = validation_set_size / (1.0 - test_set_size)
+
+            # Split the remaining data into training and validation sets
+            train_indices, val_indices = train_test_split(
+                train_val_indices, test_size=adjusted_validation_size, random_state=25
+            )
+        else:
+            train_indices = train_val_indices
+            val_indices = []
+
+        return train_indices, val_indices, test_indices
+
+    def create_holdout_data_set(self, test_set_size=0.3, validation_set_size=0.0):
         """
-        crete
+        split dataset into training, testing and validation sets
 
         Parameters
         ----------
@@ -304,15 +317,23 @@ class ProteinDataSet:
         numpy.ndarray
             The converted 2D numpy array.
         """
-        ml_data_set = MLDataSet(self)
-        if test_set_size > 1.0 or test_set_size < 0.0:
-            print("test size should in [0, 1]")
-        else:
-            training_set_indices, test_set_indices = self._get_holdout_indices(
-                test_set_size
+        if test_set_size < 0.0 or test_set_size > 0.5:
+            raise ValueError("test size should be in the range [0, 0.5]")
+
+        if validation_set_size < 0.0 or validation_set_size > (1.0 - test_set_size):
+            raise ValueError(
+                f"validation size should be in the range [0, {1.0 - test_set_size}]"
             )
-            ml_data_set.training_indices = training_set_indices
-            ml_data_set.test_indices = test_set_indices
+
+        training_indices, validation_indices, test_indices = self._get_holdout_indices(
+            test_set_size, validation_set_size
+        )
+
+        ml_data_set = MLDataSet(self)
+        ml_data_set.training_indices = training_indices
+        ml_data_set.validation_indices = validation_indices
+        ml_data_set.test_indices = test_indices
+
         return ml_data_set
 
     def read_target_property(self, target_property_filename):
