@@ -22,7 +22,7 @@ class ProteinDataSet:
         self,
         trajectory_filename,
         topology_filename,
-        target_property_filename,
+        target_property_filename=None,
         config_parameters=None,
     ):
         """
@@ -50,7 +50,11 @@ class ProteinDataSet:
         self.frames = self._frames_of_trajectory()
         self.frame_indices = self._frame_indices_of_trajectory()
         self.ref_coordinates = self.topology_data.trajectory[0].positions
-        self.target_property = self.read_target_property(self.target_property_filename)
+        # self.target_property = self.read_target_property(self.target_property_filename)
+        if self.target_property_filename is not None:
+            self.target_property = self.read_target_property(self.target_property_filename)
+        else:
+            self.target_property = None
 
     def _read_topology(self, topology_filename):
         """
@@ -337,10 +341,17 @@ class ProteinDataSet:
         return ml_data_set
 
     def read_target_property(self, target_property_filename):
-        target_property = np.loadtxt(target_property_filename)
-        return target_property
+        # target_property = np.loadtxt(target_property_filename)
+        # return target_property
+        if target_property_filename is not None:
+            return np.loadtxt(target_property_filename)
+        else:
+            return None
 
     def get_indices_target(self, target_property_filename):
+        if self.target_property is None:
+            raise ValueError("Target property is not available.")
+        
         frame_indices = []
         for x in range(len(target_property_filename)):
             frame_indices.append(x)
