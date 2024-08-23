@@ -1,6 +1,6 @@
+from pdk_learning import *
 from sklearn.model_selection import train_test_split
 import MDAnalysis as mda
-import numpy as np
 import numpy as np
 
 
@@ -336,21 +336,3 @@ class ProteinDataSet:
         selected_frames = selection_of_frames[np.where(mask)[0]]
         filtered_target_indices = [ts.frame for ts in selected_frames]
         return filtered_target_indices
-
-
-class MLDataSet:
-    """
-    Class representing protein data for ML.
-
-    Attributes
-    -----------
-    """
-
-    def __init__(self, protein_data_set):
-        self.protein_data_set = protein_data_set
-        self.training_indices = None
-        self.test_indices = None
-        self.x_training = None
-        self.y_training = None
-        self.x_test = None
-        self.y_test = None

@@ -1,10 +1,10 @@
-import pdataset as pds
+from pdk_protein import ProteinDataSet
 
 trajectory_file = "data/MD_4AKEA_protein.xtc"
 topology_file = "data/MD_4AKEA_protein.pdb"
 target_property_file = "data/MD_4AKEA_protein.dat"
 
-p_data = pds.ProteinDataSet(
+p_data = ProteinDataSet(
     trajectory_file,
     topology_file,
     target_property_file,
